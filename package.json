@@ -1,0 +1,53 @@
+{
+  "name": "chessvox-mcp",
+  "version": "1.0.0",
+  "description": "MCP server exposing ChessVox's public chess data: the daily puzzle, mate-in-1 training puzzles, and starter opening repertoires.",
+  "type": "module",
+  "license": "MIT",
+  "author": "ChessVox",
+  "homepage": "https://github.com/MohamedCHAMI/chessvox-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MohamedCHAMI/chessvox-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MohamedCHAMI/chessvox-mcp/issues"
+  },
+  "main": "dist/index.js",
+  "bin": {
+    "chessvox-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "tsx --test test/client.test.ts test/tools.test.ts",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "chess",
+    "chessvox",
+    "puzzles",
+    "stockfish",
+    "openings",
+    "claude",
+    "cursor"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.7.0"
+  }
+}
