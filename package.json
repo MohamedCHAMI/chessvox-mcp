@@ -1,7 +1,7 @@
 {
   "name": "chessvox-mcp",
   "version": "1.0.0",
-  "description": "MCP server exposing ChessVox's public chess data: the daily puzzle, mate-in-1 training puzzles, and starter opening repertoires.",
+  "description": "ChessVox public chess data over MCP: daily puzzle, mate-in-1 puzzles, starter repertoires.",
   "type": "module",
   "license": "MIT",
   "author": "ChessVox",
@@ -13,10 +13,8 @@
   "bugs": {
     "url": "https://github.com/MohamedCHAMI/chessvox-mcp/issues"
   },
-  "main": "dist/index.js",
-  "bin": {
-    "chessvox-mcp": "dist/index.js"
-  },
+  "types": "dist/index.d.ts",
+  "mcpName": "io.github.MohamedCHAMI/chessvox-mcp",
   "files": [
     "dist",
     "README.md",
@@ -27,7 +25,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "tsx --test test/client.test.ts test/tools.test.ts",
+  "test": "tsx --test test/client.test.ts test/tools.test.ts test/integration.test.ts",
     "prepare": "npm run build"
   },
   "keywords": [
@@ -36,7 +34,6 @@
     "chess",
     "chessvox",
     "puzzles",
-    "stockfish",
     "openings",
     "claude",
     "cursor"

@@ -86,15 +86,15 @@ The ChessVox-authored starter repertoires from the [openings hub](https://chessv
 Requires Node 18+ and git.
 
 ```bash
-npx github:MohamedCHAMI/chessvox-mcp
+npx -y github:MohamedCHAMI/chessvox-mcp
 ```
 
-Once the package is published to npm this will shorten to `npx chessvox-mcp`.
+Once the package is published to npm this will shorten to `npx -y chessvox-mcp`. The `-y` flag matters: without it, npx prompts for confirmation on stdin and hangs a non-interactive MCP host.
 
 ### Claude Code
 
 ```bash
-claude mcp add chessvox -- npx github:MohamedCHAMI/chessvox-mcp
+claude mcp add chessvox -- npx -y github:MohamedCHAMI/chessvox-mcp
 ```
 
 or in `.mcp.json`:
@@ -102,7 +102,7 @@ or in `.mcp.json`:
 ```json
 {
   "mcpServers": {
-    "chessvox": { "command": "npx", "args": ["github:MohamedCHAMI/chessvox-mcp"] }
+    "chessvox": { "command": "npx", "args": ["-y", "github:MohamedCHAMI/chessvox-mcp"] }
   }
 }
 ```
@@ -114,7 +114,7 @@ Add to `claude_desktop_config.json` (via Settings → Developer → Edit Config)
 ```json
 {
   "mcpServers": {
-    "chessvox": { "command": "npx", "args": ["github:MohamedCHAMI/chessvox-mcp"] }
+    "chessvox": { "command": "npx", "args": ["-y", "github:MohamedCHAMI/chessvox-mcp"] }
   }
 }
 ```
@@ -126,7 +126,7 @@ Add to `~/.cursor/mcp.json` (or `.cursor/mcp.json` per project):
 ```json
 {
   "mcpServers": {
-    "chessvox": { "command": "npx", "args": ["github:MohamedCHAMI/chessvox-mcp"] }
+    "chessvox": { "command": "npx", "args": ["-y", "github:MohamedCHAMI/chessvox-mcp"] }
   }
 }
 ```
@@ -134,8 +134,8 @@ Add to `~/.cursor/mcp.json` (or `.cursor/mcp.json` per project):
 ## Behavior & limits
 
 - **Timeout:** every request to chessvox.com aborts after 10 s and returns a clear error.
-- **Caching:** modest in-memory TTL cache (daily puzzle 5 min, mate rush 2 min, starters 1 h), so repeated questions in one session don't hammer the API.
-- **Rate limits:** chessvox.com allows roughly 20–60 anonymous requests/minute per endpoint; the cache keeps a normal session far below that. On HTTP 429 the server tells you to wait a minute.
+- **Caching:** modest in-memory cache (daily puzzle 5 min, mate rush 2 min, starters 1 h) with true LRU eviction, in-flight dedupe (parallel identical calls share one request), and TTLs that never leak today's puzzle into the next UTC day.
+- **Rate limits:** chessvox.com allows roughly 20–60 anonymous requests/minute per endpoint. On HTTP 429 or a 5xx the server cools down for a minute and serves the last cached data if it has any; the cache keeps a normal session far below the limits anyway.
 - **Failure mode:** network errors, timeouts, and upstream failures return MCP tool errors (`isError: true`) with a human-readable explanation — the server never crashes or hangs.
 - **Privacy:** no telemetry, no logging of your prompts, no API keys, no account needed.
 

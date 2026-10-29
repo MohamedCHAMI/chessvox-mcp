@@ -13,7 +13,7 @@ function okResponse(body: unknown): Response {
 
 const DAILY = {
   dayUtc: "2026-10-28",
-  puzzle: { id: "a94c87e4", fen: "r1b2rk1/1p3ppn w - - 0 17", moves: ["c2h7"], rating: 666 },
+  puzzle: { id: "a94c87e4", fen: "6k1/5ppp/8/8/8/8/5PPP/3Q2K1 w - - 0 1", moves: ["d1d8"], rating: 666 },
   completed: false,
   completedAt: null,
 };
@@ -39,7 +39,8 @@ test("validateDay accepts today and past dates, rejects the rest", () => {
   const today = new Date().toISOString().slice(0, 10);
   assert.equal(validateDay(today), null);
   assert.equal(validateDay("2026-10-20"), null);
-  assert.match(validateDay("2027-01-01")!, /Future puzzles are not available/);
+  assert.match(validateDay(`${new Date().getUTCFullYear() + 2}-01-01`)!, /Future puzzles are not available/);
+  assert.match(validateDay("0050-01-01")!, /archive starts well after 2000/);
   assert.match(validateDay("not-a-date")!, /YYYY-MM-DD/);
   assert.match(validateDay("2026-02-30")!, /not a real calendar date/);
   assert.match(validateDay("2026-10-1")!, /YYYY-MM-DD/);
@@ -55,8 +56,9 @@ test("chessvox_daily_puzzle returns today's puzzle as structured JSON", async ()
   assert.equal(result.isError, undefined);
   assert.equal(urls[0], "https://chessvox.com/api/daily-puzzle");
   assert.equal(payload.fen, DAILY.puzzle.fen);
-  assert.deepEqual(payload.solutionUci, ["c2h7"]);
+  assert.deepEqual(payload.solutionUci, ["d1d8"]);
   assert.equal(payload.rating, 666);
+  assert.equal(payload.playOnline, "https://chessvox.com/daily-puzzle");
 });
 
 test("chessvox_daily_puzzle forwards a valid past day", async () => {
@@ -66,6 +68,25 @@ test("chessvox_daily_puzzle forwards a valid past day", async () => {
   await tool.handler({ day: "2026-10-20" });
 
   assert.equal(urls[0], "https://chessvox.com/api/daily-puzzle?day=2026-10-20");
+});
+
+test("chessvox_daily_puzzle accepts `date` as an alias for `day`", async () => {
+  const { client, urls } = clientWith(200, { ...DAILY, dayUtc: "2026-10-20" });
+  const tool = createTools(client).find((t) => t.name === "chessvox_daily_puzzle")!;
+
+  await tool.handler({ date: "2026-10-20" });
+
+  assert.equal(urls[0], "https://chessvox.com/api/daily-puzzle?day=2026-10-20");
+});
+
+test("chessvox_daily_puzzle links a past day to that day's puzzle", async () => {
+  const { client } = clientWith(200, { ...DAILY, dayUtc: "2026-10-20" });
+  const tool = createTools(client).find((t) => t.name === "chessvox_daily_puzzle")!;
+
+  const result = await tool.handler({ day: "2026-10-20" });
+  const payload = text(result) as { playOnline: string };
+
+  assert.equal(payload.playOnline, "https://chessvox.com/daily-puzzle?day=2026-10-20");
 });
 
 test("chessvox_daily_puzzle rejects malformed, impossible, and future days", async () => {

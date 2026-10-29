@@ -1,0 +1,12 @@
+{
+  "name": "io.github.MohamedCHAMI/chessvox-mcp",
+  "description": "ChessVox public chess data over MCP: daily puzzle, mate-in-1 puzzles, starter repertoires.",
+  "version": "1.0.0",
+  "repository": {
+    "url": "git+https://github.com/MohamedCHAMI/chessvox-mcp.git",
+    "source": "https://github.com/MohamedCHAMI/chessvox-mcp"
+  },
+  "websiteUrl": "https://chessvox.com",
+  "license": "MIT",
+  "keywords": ["chess", "puzzles", "daily-puzzle", "openings", "training", "mcp"]
+}

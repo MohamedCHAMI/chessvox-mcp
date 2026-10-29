@@ -12,7 +12,7 @@ function jsonResponse(body: unknown, status = 200): Response {
 
 const DAILY_PUZZLE_BODY = {
   dayUtc: "2026-10-28",
-  puzzle: { id: "a94c87e4", fen: "r1b2rk1/1p3ppn/p1p1pq1p w - - 0 17", moves: ["c2h7"], rating: 666 },
+  puzzle: { id: "a94c87e4", fen: "6k1/5ppp/8/8/8/8/5PPP/3Q2K1 w - - 0 1", moves: ["d1d8"], rating: 666 },
   completed: false,
   completedAt: null,
 };
@@ -38,7 +38,7 @@ test("getDailyPuzzle requests the public endpoint with browser UA", async () => 
   assert.equal(calls[0]!.init.method, "GET");
   const headers = calls[0]!.init.headers as Record<string, string>;
   assert.match(headers["User-Agent"] ?? "", /Mozilla\/5\.0/);
-  assert.equal(daily.puzzle.moves[0], "c2h7");
+  assert.equal(daily.puzzle.moves[0], "d1d8");
   assert.equal(daily.puzzle.rating, 666);
 });
 
@@ -144,7 +144,7 @@ test("network failures produce a reachable-host message", async () => {
 
 test("non-JSON responses produce a clear parse error", async () => {
   const client = new ChessVoxClient({
-    fetchImpl: async () => new Response("<html>mainten ance</html>", { status: 200 }),
+    fetchImpl: async () => new Response("<html>maintenance</html>", { status: 200 }),
   });
 
   await assert.rejects(
@@ -153,19 +153,37 @@ test("non-JSON responses produce a clear parse error", async () => {
   );
 });
 
+test("unexpected response shapes produce a contract error", async () => {
+  const client = new ChessVoxClient({
+    fetchImpl: async () => jsonResponse({ ok: true }),
+  });
+
+  await assert.rejects(
+    () => client.getDailyPuzzle(),
+    (error: unknown) =>
+      error instanceof ChessVoxApiError &&
+      error.message.includes("Unexpected response structure from chessvox.com")
+  );
+});
+
 test("getMateRushPuzzles parses the puzzle batch shape", async () => {
   const body = {
     puzzles: [
-      { id: "p1", fen: "6k1/1pq4p w - - 2 40", moves: ["f6f8"] },
-      { id: "p2", fen: "1R6/5k2 w - - 10 41", moves: ["b8f8"] },
+      { id: "p1", fen: "6k1/5ppp/8/8/8/8/5PPP/3Q2K1 w - - 2 40", moves: ["d1d8"] },
+      { id: "p2", fen: "1R6/5k2/8/8/8/8/8/6K1 w - - 10 41", moves: ["b8f8"] },
     ],
   };
   const client = new ChessVoxClient({ fetchImpl: async () => jsonResponse(body) });
 
   const batch = await client.getMateRushPuzzles();
 
+  // The batch is shuffled per call, so assert membership rather than order.
   assert.equal(batch.puzzles.length, 2);
-  assert.equal(batch.puzzles[1]!.moves[0], "b8f8");
+  const fens = batch.puzzles.map((p) => p.fen).sort();
+  assert.deepEqual(fens, [
+    "1R6/5k2/8/8/8/8/8/6K1 w - - 10 41",
+    "6k1/5ppp/8/8/8/8/5PPP/3Q2K1 w - - 2 40",
+  ]);
 });
 
 test("getStarterRepertoires parses the starters shape", async () => {
@@ -188,4 +206,38 @@ test("getStarterRepertoires parses the starters shape", async () => {
 
   assert.equal(starters[0]!.slug, "italian-game");
   assert.equal(starters[0]!.color, "white");
+});
+
+test("a 429 sets a cooldown: the next call fails fast without another request", async () => {
+  let calls = 0;
+  const impl: FetchLike = async () => {
+    calls += 1;
+    return jsonResponse({ error: "Too many requests" }, 429);
+  };
+  const client = new ChessVoxClient({ fetchImpl: impl });
+
+  await assert.rejects(() => client.getDailyPuzzle(), /rate limit/);
+  await assert.rejects(() => client.getDailyPuzzle(), /Cooling down/);
+  assert.equal(calls, 1, "cooldown must not hit the network again");
+});
+
+test("parallel identical calls share one in-flight request", async () => {
+  // Gate the single upstream request so both callers must join it
+  // deterministically — no timers involved.
+  const gate = Promise.withResolvers<void>();
+  let calls = 0;
+  const impl: FetchLike = async () => {
+    calls += 1;
+    await gate.promise;
+    return jsonResponse(DAILY_PUZZLE_BODY);
+  };
+  const client = new ChessVoxClient({ fetchImpl: impl });
+
+  const first = client.getDailyPuzzle();
+  const second = client.getDailyPuzzle();
+  gate.resolve();
+  const [a, b] = await Promise.all([first, second]);
+
+  assert.equal(calls, 1, "both callers must share one request");
+  assert.equal(a.dayUtc, b.dayUtc);
 });
