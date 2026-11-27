@@ -1,12 +1,30 @@
 {
-  "name": "io.github.MohamedCHAMI/chessvox-mcp",
-  "description": "ChessVox public chess data over MCP: daily puzzle, mate-in-1 puzzles, starter repertoires.",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.MohamedCHAMI/chessvox",
+  "description": "Free chess tools: Stockfish best move, openings, daily puzzle, Elo. Local npx or hosted, no key.",
   "version": "1.0.0",
+  "title": "ChessVox",
+  "websiteUrl": "https://chessvox.com/developers",
   "repository": {
-    "url": "git+https://github.com/MohamedCHAMI/chessvox-mcp.git",
-    "source": "https://github.com/MohamedCHAMI/chessvox-mcp"
+    "url": "https://github.com/MohamedCHAMI/chessvox-mcp",
+    "source": "github"
   },
-  "websiteUrl": "https://chessvox.com",
   "license": "MIT",
-  "keywords": ["chess", "puzzles", "daily-puzzle", "openings", "training", "mcp"]
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "chessvox-mcp",
+      "version": "1.0.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeHint": "npx"
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://chessvox.com/api/mcp"
+    }
+  ]
 }

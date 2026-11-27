@@ -1,50 +1,57 @@
 {
   "name": "chessvox-mcp",
   "version": "1.0.0",
-  "description": "ChessVox public chess data over MCP: daily puzzle, mate-in-1 puzzles, starter repertoires.",
-  "type": "module",
+  "description": "MCP server exposing free ChessVox chess tools: Stockfish best move, opening encyclopedia lookup, daily puzzle, and Elo change calculator.",
   "license": "MIT",
-  "author": "ChessVox",
-  "homepage": "https://github.com/MohamedCHAMI/chessvox-mcp#readme",
+  "author": "Mohamed Chami",
+  "type": "module",
+  "bin": {
+    "chessvox-mcp": "src/cli.js"
+  },
+  "main": "src/server.js",
+  "files": [
+    "src/",
+    "test/",
+    "README.md",
+    "LICENSE",
+    "server.json"
+  ],
+  "scripts": {
+    "start": "node src/cli.js",
+    "start:http": "node src/http.js",
+    "test": "node --test \"test/*.test.mjs\"",
+    "prepublishOnly": "npm test",
+    "sync-openings": "node --experimental-strip-types scripts/sync-openings.mjs"
+  },
+  "engines": {
+    "node": ">=22.6"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MohamedCHAMI/chessvox-mcp.git"
   },
+  "homepage": "https://chessvox.com/developers",
   "bugs": {
     "url": "https://github.com/MohamedCHAMI/chessvox-mcp/issues"
   },
-  "types": "dist/index.d.ts",
-  "mcpName": "io.github.MohamedCHAMI/chessvox-mcp",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "engines": {
-    "node": ">=18"
-  },
-  "scripts": {
-    "build": "tsc",
-  "test": "tsx --test test/client.test.ts test/tools.test.ts test/integration.test.ts",
-    "prepare": "npm run build"
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "chess.js": "^1.4.0",
+    "stockfish": "^19.0.0",
+    "zod": "^3.25.0"
   },
   "keywords": [
-    "mcp",
-    "model-context-protocol",
+    "ai-agent",
     "chess",
+    "chess-api",
     "chessvox",
-    "puzzles",
-    "openings",
     "claude",
-    "cursor"
+    "cursor",
+    "mcp",
+    "mcp-server",
+    "modelcontextprotocol",
+    "stockfish",
+    "stockfish-api"
   ],
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.32.2",
-    "zod": "^4.6.7"
-  },
-  "devDependencies": {
-    "@types/node": "^24.0.0",
-    "tsx": "^4.20.0",
-    "typescript": "^5.7.0"
-  }
+  "mcpName": "io.github.MohamedCHAMI/chessvox"
 }
