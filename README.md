@@ -1,5 +1,7 @@
 # chessvox-mcp
 
+[![chessvox-mcp on Glama](https://glama.ai/mcp/servers/MohamedCHAMI/chessvox-mcp/badge)](https://glama.ai/mcp/servers/MohamedCHAMI/chessvox-mcp)
+
 MCP server exposing four free chess tools from [ChessVox](https://chessvox.com):
 
 | Tool | What it does | Runs |
